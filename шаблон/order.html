@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/index.css">
-    <title>Document</title>
+    <title>Бронирование номера</title>
 </head>
 <body class="container">
 <header class="d-flex flex-wrap justify-content-center py-3">
@@ -16,68 +16,83 @@
         <span class="fs-4 mx-2 fw-medium">Светлые Сны</span>
     </a>
     <ul class="nav">
-        <li class="nav-item"><a href="#" class="nav-link">Приезжайте как гости, уезжайте как друзья!</a></li>
+        <li class="nav-item"><a href="index.html" class="nav-link">Каталог номеров</a></li>
     </ul>
 </header>
-<div class="alert alert-success text-center" role="alert">
-    Заявка успешно отправлена!
+
+<div class="alert alert-success text-center" role="alert" id="success-message" style="display: none;">
+    Ваша заявка на бронирование успешно отправлена и находится на рассмотрении!
 </div>
-<!--Форма бронирования-->
+
 <main>
     <div class="d-flex justify-content-between flex-wrap align-items-center">
         <h1>Бронирование номера</h1>
     </div>
 
-    <form class="row g-3 needs-validation my-2" novalidate method="post">
+    <form class="row g-3 needs-validation my-2" id="booking-form" novalidate>
         <div class="col-md-4">
-            <label for="validationCustom01" class="form-label">Имя</label>
-            <input type="text" class="form-control is-valid" id="validationCustom01" required>
+            <label for="firstName" class="form-label">Имя</label>
+            <input type="text" class="form-control" id="firstName" required>
             <div class="invalid-feedback">
                 Пожалуйста, введите имя
             </div>
         </div>
         <div class="col-md-4">
-            <label for="validationCustom02" class="form-label">Фамилия</label>
-            <input type="text" class="form-control is-invalid" id="validationCustom02" required>
+            <label for="lastName" class="form-label">Фамилия</label>
+            <input type="text" class="form-control" id="lastName" required>
             <div class="invalid-feedback">
                 Пожалуйста, введите фамилию
             </div>
         </div>
         <div class="col-md-4">
             <label for="validationCustomPhone" class="form-label">Телефон</label>
-            <input type="text" class="form-control is-invalid" id="validationCustomPhone"
-                   aria-describedby="inputGroupPrepend" required>
+            <input type="text" class="form-control" id="validationCustomPhone" required>
             <div class="invalid-feedback">
                 Пожалуйста, введите номер телефона
             </div>
         </div>
         <div class="col-md-6">
-            <label for="validationCustom03" class="form-label">Почта</label>
-            <input type="text" class="form-control is-invalid" id="validationCustom03" required>
+            <label for="email" class="form-label">Почта</label>
+            <input type="email" class="form-control" id="email" required>
             <div class="invalid-feedback">
                 Пожалуйста, введите email
             </div>
         </div>
-        <div class="col-md-3">
-            <label for="validationCustom04" class="form-label">Дата заезда</label>
-            <input type="date" class="form-control is-invalid" id="validationCustom04" required>
+        <div class="col-md-6">
+            <label for="roomCategory" class="form-label">Категория номера</label>
+            <select class="form-select" id="roomCategory" required>
+                <option selected disabled value="">Выберите категорию...</option>
+                <option>Стандарт</option>
+                <option>Студия</option>
+                <option>Люкс</option>
+            </select>
             <div class="invalid-feedback">
-                Пожалуйста, введите дату заезда
+                Пожалуйста, выберите категорию номера.
             </div>
         </div>
-        <div class="col-md-3">
-            <label for="validationCustom05" class="form-label">Дата выезда</label>
-            <input type="date" class="form-control is-invalid" id="validationCustom05" required>
+        <div class="col-md-6">
+            <label for="checkInDate" class="form-label">Дата заезда</label>
+            <input type="date" class="form-control" id="checkInDate" required>
             <div class="invalid-feedback">
-                Пожалуйста, введите дату выезда
+                Пожалуйста, выберите дату заезда.
             </div>
         </div>
+        <div class="col-md-6">
+            <label for="checkOutDate" class="form-label">Дата выезда</label>
+            <input type="date" class="form-control" id="checkOutDate" required>
+            <div class="invalid-feedback">
+                Пожалуйста, выберите дату выезда.
+            </div>
+        </div>
+
+        <div id="date-error" class="alert alert-danger" style="display: none;"></div>
+
         <div class="d-grid gap-2">
-            <button class="btn btn-primary">Отправить заявку</button>
+            <button class="btn btn-primary" type="submit">Отправить заявку</button>
         </div>
     </form>
 </main>
-<!--Контактная информация-->
+
 <footer class="py-2 my-2">
     <ul class="nav justify-content-between align-items-center">
         <li class="nav-item"><a href="#" class="nav-link text-body-secondary">ул. г.Москва, ул. Ивовая, 48</a></li>
@@ -88,8 +103,8 @@
         </li>
     </ul>
 </footer>
-<script src="js/bootstrap.bundle.min.js"></script>
 <script src="js/jquery-3.7.1.slim.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
 <script src="js/jquery.inputmask.min.js"></script>
 <script src="js/index.js"></script>
 </body>
