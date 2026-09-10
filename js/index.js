@@ -58,8 +58,8 @@ function isRoomBooked(roomCategory, checkInDate, checkOutDate) {
 // --- Инициализация при загрузке ---
 
 $(document).ready(function () {
-    // Маска для телефона (если поле есть на странице)
-    if ($('#validationCustomPhone').length) {
+    // Маска для телефона (только если плагин подключён и поле есть на странице)
+    if ($.fn.inputmask && $('#validationCustomPhone').length) {
         $('#validationCustomPhone').inputmask({ "mask": "+7(999)999-99-99" });
     }
 
