@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <title>Вход для администратора</title>
+</head>
+<body class="container">
+<header class="d-flex flex-wrap justify-content-center py-3">
+    <a href="index.html"
+       class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+        <span class="fs-4 mx-2 fw-medium">Светлые Сны</span>
+    </a>
+    <ul class="nav">
+        <li class="nav-item"><a href="index.html" class="nav-link">На главную</a></li>
+    </ul>
+</header>
+<!--Форма авторизации-->
+<main>
+    <div class="d-flex justify-content-between flex-wrap align-items-center">
+        <h1>Вход для администратора</h1>
+    </div>
+
+    <form class="my-2" id="login-form" novalidate>
+        <div class="my-2">
+            <label for="username" class="form-label">Логин</label>
+            <input type="text" class="form-control" id="username" required>
+        </div>
+        <div class="my-2">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="password" required>
+        </div>
+        <div id="login-error" class="alert alert-danger" style="display: none;"></div>
+        <div class="d-grid gap-2">
+            <button class="btn btn-primary" type="submit">Войти</button>
+        </div>
+    </form>
+</main>
+<!--Контактная информация-->
+<footer class="py-2 my-2">
+    <ul class="nav justify-content-between align-items-center">
+        <li class="nav-item"><a href="#" class="nav-link text-body-secondary">ул. г.Москва, ул. Ивовая, 48</a></li>
+        <li class="nav-item"><a href="#" class="nav-link text-body-secondary">Время работы: Пн-Пт, с 8:00-17:00</a></li>
+        <li class="nav-item"><a href="tel:88005553535" class="nav-link text-body-secondary">тел. 8 (800) 555 - 35 -
+            35</a></li>
+        <li class="nav-item"><a href="mailto:обращения@СветлыеСны.рф" class="nav-link text-body-secondary">Email: обращения@СветлыеСны.рф</a>
+        </li>
+    </ul>
+</footer>
+<script src="js/jquery-3.7.1.slim.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/index.js"></script>
+<script>
+    $(document).ready(function() {
+        const ADMIN_LOGIN = 'hotel123';
+        const ADMIN_PASSWORD = 'adminHotel';
+
+        $('#login-form').on('submit', function(e) {
+            e.preventDefault();
+            const username = $('#username').val();
+            const password = $('#password').val();
+            const errorDiv = $('#login-error');
+
+            if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+                // Успешный вход
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                // Ошибка входа
+                errorDiv.text('Неверный логин или пароль.').show();
+            }
+        });
+    });
+</script>
+</body>
+</html>
