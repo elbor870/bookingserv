@@ -1,62 +1,31 @@
 // --- Управление данными ---
 
 const BOOKINGS_KEY = 'hotelBookings';
-const ADMIN_SESSION_KEY = 'isAdminLoggedIn';
 
-// Получить все заявки из localStorage
 function getBookings() {
-    const bookings = localStorage.getItem(BOOKINGS_KEY);
-    return bookings ? JSON.parse(bookings) : [];
+    try {
+        const data = localStorage.getItem(BOOKINGS_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        console.error('Ошибка чтения заявок:', e);
+        return [];
+    }
 }
 
-// Сохранить все заявки в localStorage
 function saveBookings(bookings) {
     localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
 }
 
-// Добавить новую заявку
 function addBooking(booking) {
     const bookings = getBookings();
-    // Генерируем уникальный ID для заявки
-    booking.id = Date.now().toString();
-    booking.status = 'На рассмотрении'; // Начальный статус
+    booking.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    booking.status = 'На рассмотрении';
     bookings.push(booking);
     saveBookings(bookings);
 }
 
-// Обновить статус заявки
-function updateBookingStatus(bookingId, newStatus) {
-    const bookings = getBookings();
-    const bookingIndex = bookings.findIndex(b => b.id === bookingId);
-    if (bookingIndex !== -1) {
-        bookings[bookingIndex].status = newStatus;
-        saveBookings(bookings);
-    }
-}
-
-// Удалить заявку
-function deleteBooking(bookingId) {
-    let bookings = getBookings();
-    bookings = bookings.filter(b => b.id !== bookingId);
-    saveBookings(bookings);
-}
-
-// --- Управление сессией администратора ---
-
-// Проверить, вошел ли администратор
-function isAdminLoggedIn() {
-    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-}
-
-// Выйти из режима администратора
-function logoutAdmin() {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    window.location.href = 'index.html'; // Перенаправляем на главную
-}
-
 // --- Вспомогательные функции ---
 
-// Форматирование даты в 'YYYY-MM-DD'
 function formatDate(date) {
     const d = new Date(date);
     let month = '' + (d.getMonth() + 1);
@@ -69,14 +38,12 @@ function formatDate(date) {
     return [year, month, day].join('-');
 }
 
-// Проверка, занят ли номер на указанные даты
 function isRoomBooked(roomCategory, checkInDate, checkOutDate) {
     const bookings = getBookings();
     const newCheckIn = new Date(checkInDate);
     const newCheckOut = new Date(checkOutDate);
 
     return bookings.some(booking => {
-        // Нас интересуют только одобренные брони на этот же номер
         if (booking.status !== 'Одобрена' || booking.roomCategory !== roomCategory) {
             return false;
         }
@@ -84,17 +51,17 @@ function isRoomBooked(roomCategory, checkInDate, checkOutDate) {
         const existingCheckIn = new Date(booking.checkInDate);
         const existingCheckOut = new Date(booking.checkOutDate);
 
-        // Проверка на пересечение периодов
-        // Новый период начинается до окончания старого И новый период заканчивается после начала старого
         return newCheckIn < existingCheckOut && newCheckOut > existingCheckIn;
     });
 }
 
+// --- Инициализация при загрузке ---
 
-// --- Инициализация при загрузке страницы ---
 $(document).ready(function () {
-    // Маска для телефона
-    $('#validationCustomPhone').inputmask({ "mask": "+7(999)999-99-99" });
+    // Маска для телефона (если поле есть на странице)
+    if ($('#validationCustomPhone').length) {
+        $('#validationCustomPhone').inputmask({ "mask": "+7(999)999-99-99" });
+    }
 
     // --- Логика для страницы order.html ---
     if ($('#booking-form').length) {
@@ -104,12 +71,10 @@ $(document).ready(function () {
         const bookingForm = $('#booking-form');
         const errorMessage = $('#date-error');
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Убираем время, чтобы сравнивать только даты
+        today.setHours(0, 0, 0, 0);
 
-        // Устанавливаем минимальную дату для заезда
         checkInInput.attr('min', formatDate(today));
 
-        // При изменении даты заезда, обновляем минимальную дату для выезда
         checkInInput.on('change', function () {
             const selectedCheckIn = new Date($(this).val());
             const nextDay = new Date(selectedCheckIn);
@@ -120,12 +85,10 @@ $(document).ready(function () {
             }
         });
 
-        // Обработка отправки формы
         bookingForm.on('submit', function (e) {
             e.preventDefault();
             errorMessage.text('').hide();
 
-            // Стандартная валидация Bootstrap
             if (!this.checkValidity()) {
                 $(this).addClass('was-validated');
                 return;
@@ -135,18 +98,16 @@ $(document).ready(function () {
             const checkInDate = checkInInput.val();
             const checkOutDate = checkOutInput.val();
 
-            // Пользовательская валидация
             if (new Date(checkInDate) >= new Date(checkOutDate)) {
                 errorMessage.text('Дата выезда должна быть позже даты заезда.').show();
                 return;
             }
-            
+
             if (isRoomBooked(roomCategory, checkInDate, checkOutDate)) {
                 errorMessage.text('К сожалению, номер этой категории уже забронирован на выбранные даты. Пожалуйста, выберите другие даты или категорию.').show();
                 return;
             }
 
-            // Создание и сохранение заявки
             const newBooking = {
                 firstName: $('#firstName').val(),
                 lastName: $('#lastName').val(),
@@ -158,7 +119,6 @@ $(document).ready(function () {
             };
             addBooking(newBooking);
 
-            // Показываем сообщение об успехе
             $('#booking-form').hide();
             $('#success-message').show();
         });
