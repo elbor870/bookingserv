@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/index.css">
-    <title>Document</title>
+    <title>Панель администратора</title>
 </head>
 <body class="container">
 <header class="d-flex flex-wrap justify-content-center py-3">
@@ -17,91 +17,17 @@
     </a>
 
     <ul class="nav">
-        <li class="nav-item"><a href="#" class="nav-link">Приезжайте как гости, уезжайте как друзья!</a></li>
+        <li class="nav-item"><a href="index.html" class="nav-link">На главную</a></li>
+        <li class="nav-item"><a href="#" class="nav-link" id="logout-btn">Выйти</a></li>
     </ul>
 </header>
 <main>
     <div class="d-flex justify-content-between flex-wrap align-items-center">
         <h1>Панель администратора</h1>
     </div>
-    <div class="d-flex justify-content-around flex-wrap align-items-center">
-        <div class="card">
-            <div class="card-body">
-                <h5>Фамилия: Петров</h5>
-                <h5>Имя: Иван</h5>
-                <h5>Телефон: +7(800)555-35-35</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">Дата заезда: 19.02.2020</li>
-                    <li class="list-group-item">Дата выезда: 21.02.2020</li>
-                </ul>
-            </div>
-            <div class="d-grid gap-2">
-                <a href="#" class="btn btn-success">Одобрить</a>
-                <a href="#" class="btn btn-danger">Удалить</a>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <h5>Фамилия: Петров</h5>
-                <h5>Имя: Иван</h5>
-                <h5>Телефон: +7(800)555-35-35</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">Дата заезда: 19.02.2020</li>
-                    <li class="list-group-item">Дата выезда: 21.02.2020</li>
-                </ul>
-            </div>
-            <div class="d-grid gap-2">
-                <a href="#" class="btn btn-success">Одобрить</a>
-                <a href="#" class="btn btn-danger">Удалить</a>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <h5>Фамилия: Петров</h5>
-                <h5>Имя: Иван</h5>
-                <h5>Телефон: +7(800)555-35-35</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">Дата заезда: 19.02.2020</li>
-                    <li class="list-group-item">Дата выезда: 21.02.2020</li>
-                </ul>
-            </div>
-            <div class="d-grid gap-2">
-                <a href="#" class="btn btn-success">Одобрить</a>
-                <a href="#" class="btn btn-danger">Удалить</a>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <h5>Фамилия: Петров</h5>
-                <h5>Имя: Иван</h5>
-                <h5>Телефон: +7(800)555-35-35</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">Дата заезда: 19.02.2020</li>
-                    <li class="list-group-item">Дата выезда: 21.02.2020</li>
-                </ul>
-            </div>
-            <div class="d-grid gap-2">
-                <a href="#" class="btn btn-success">Одобрить</a>
-                <a href="#" class="btn btn-danger">Удалить</a>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <h5>Фамилия: Петров</h5>
-                <h5>Имя: Иван</h5>
-                <h5>Телефон: +7(800)555-35-35</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">Дата заезда: 19.02.2020</li>
-                    <li class="list-group-item">Дата выезда: 21.02.2020</li>
-                </ul>
-            </div>
-            <div class="d-grid gap-2">
-                <a href="#" class="btn btn-success">Одобрить</a>
-                <a href="#" class="btn btn-danger">Удалить</a>
-            </div>
-        </div>
+    <div id="bookings-container" class="d-flex justify-content-around flex-wrap align-items-start">
+        <!-- Здесь будут динамически отображаться карточки заявок -->
     </div>
-
 </main>
 
 <footer class="py-2 my-2">
@@ -114,6 +40,79 @@
         </li>
     </ul>
 </footer>
+<script src="js/jquery-3.7.1.slim.min.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/index.js"></script>
+<script>
+    $(document).ready(function () {
+        // 1. Проверка авторизации
+        if (!isAdminLoggedIn()) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // 2. Функция для отрисовки карточек заявок
+        function renderBookings() {
+            const bookings = getBookings();
+            const container = $('#bookings-container');
+            container.empty();
+
+            if (bookings.length === 0) {
+                container.html('<div class="alert alert-info w-100 text-center">Новых заявок нет.</div>');
+                return;
+            }
+
+            // Сортируем заявки: сначала новые
+            bookings.sort((a, b) => b.id - a.id);
+
+            bookings.forEach(booking => {
+                const card = `
+                    <div class="card" style="min-width: 20rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Заявка от: ${booking.lastName} ${booking.firstName}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Категория: ${booking.roomCategory}</h6>
+                            <p class="card-text">
+                                <strong>Телефон:</strong> ${booking.phone}<br>
+                                <strong>Email:</strong> ${booking.email}<br>
+                                <strong>Дата заезда:</strong> ${new Date(booking.checkInDate).toLocaleDateString('ru-RU')}<br>
+                                <strong>Дата выезда:</strong> ${new Date(booking.checkOutDate).toLocaleDateString('ru-RU')}
+                            </p>
+                             <p class="card-text"><strong>Статус:</strong> <span class="badge ${booking.status === 'Одобрена' ? 'text-bg-success' : 'text-bg-secondary'}">${booking.status}</span></p>
+                        </div>
+                        <div class="d-grid gap-2 card-footer bg-transparent border-0 pt-0">
+                            ${booking.status === 'На рассмотрении' ? `<button class="btn btn-success approve-btn" data-id="${booking.id}">Одобрить</button>` : ''}
+                            <button class="btn btn-danger delete-btn" data-id="${booking.id}">Удалить</button>
+                        </div>
+                    </div>
+                `;
+                container.append(card);
+            });
+        }
+
+        // 3. Обработчики событий
+        $('#logout-btn').on('click', function(e) {
+            e.preventDefault();
+            logoutAdmin();
+        });
+
+        // Делегирование событий для кнопок "Одобрить" и "Удалить"
+        $('#bookings-container').on('click', '.approve-btn', function() {
+            const bookingId = $(this).data('id');
+            updateBookingStatus(bookingId, 'Одобрена');
+            renderBookings(); // Перерисовываем список
+        });
+
+        $('#bookings-container').on('click', '.delete-btn', function() {
+            const bookingId = $(this).data('id');
+            if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
+                deleteBooking(bookingId);
+                renderBookings(); // Перерисовываем список
+            }
+        });
+
+        // 4. Первоначальная отрисовка
+        renderBookings();
+    });
+</script>
 </body>
 </html>
