@@ -42,76 +42,132 @@
 </footer>
 <script src="js/jquery-3.7.1.slim.min.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
-<script src="js/index.js"></script>
 <script>
-    $(document).ready(function () {
-        // 1. Проверка авторизации
-        if (!isAdminLoggedIn()) {
-            window.location.href = 'login.html';
+    // Проверка авторизации (используем localStorage, чтобы не терялось при перезагрузке)
+    if (localStorage.getItem('isAdminLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+    }
+
+    // --- Функции для работы с заявками (встроены прямо здесь, чтобы избежать проблем) ---
+
+    const BOOKINGS_KEY = 'hotelBookings';
+
+    function getBookings() {
+        try {
+            const data = localStorage.getItem(BOOKINGS_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error('Ошибка чтения заявок:', e);
+            return [];
+        }
+    }
+
+    function saveBookings(bookings) {
+        localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
+    }
+
+    function updateBookingStatus(bookingId, newStatus) {
+        const bookings = getBookings();
+        const booking = bookings.find(b => b.id === bookingId);
+        if (booking) {
+            booking.status = newStatus;
+            saveBookings(bookings);
+            console.log('Статус обновлён:', bookingId, newStatus);
+            return true;
+        }
+        console.error('Заявка не найдена:', bookingId);
+        return false;
+    }
+
+    function deleteBooking(bookingId) {
+        let bookings = getBookings();
+        bookings = bookings.filter(b => b.id !== bookingId);
+        saveBookings(bookings);
+    }
+
+    // --- Отрисовка карточек ---
+
+    function renderBookings() {
+        const bookings = getBookings();
+        const container = document.getElementById('bookings-container');
+        container.innerHTML = '';
+
+        if (bookings.length === 0) {
+            container.innerHTML = '<div class="alert alert-info w-100 text-center">Новых заявок нет.</div>';
             return;
         }
 
-        // 2. Функция для отрисовки карточек заявок
-        function renderBookings() {
-            const bookings = getBookings();
-            const container = $('#bookings-container');
-            container.empty();
+        // Сортируем заявки: сначала новые
+        bookings.sort((a, b) => (b.id > a.id ? 1 : -1));
 
-            if (bookings.length === 0) {
-                container.html('<div class="alert alert-info w-100 text-center">Новых заявок нет.</div>');
-                return;
-            }
+        bookings.forEach(booking => {
+            const card = document.createElement('div');
+            card.className = 'card admin-card';
 
-            // Сортируем заявки: сначала новые
-            bookings.sort((a, b) => b.id - a.id);
+            const statusClass = booking.status === 'Одобрена' ? 'text-bg-success' : 'text-bg-secondary';
 
-            bookings.forEach(booking => {
-                const card = `
-                    <div class="card" style="min-width: 20rem;">
-                        <div class="card-body">
-                            <h5 class="card-title">Заявка от: ${booking.lastName} ${booking.firstName}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Категория: ${booking.roomCategory}</h6>
-                            <p class="card-text">
-                                <strong>Телефон:</strong> ${booking.phone}<br>
-                                <strong>Email:</strong> ${booking.email}<br>
-                                <strong>Дата заезда:</strong> ${new Date(booking.checkInDate).toLocaleDateString('ru-RU')}<br>
-                                <strong>Дата выезда:</strong> ${new Date(booking.checkOutDate).toLocaleDateString('ru-RU')}
-                            </p>
-                             <p class="card-text"><strong>Статус:</strong> <span class="badge ${booking.status === 'Одобрена' ? 'text-bg-success' : 'text-bg-secondary'}">${booking.status}</span></p>
-                        </div>
-                        <div class="d-grid gap-2 card-footer bg-transparent border-0 pt-0">
-                            ${booking.status === 'На рассмотрении' ? `<button class="btn btn-success approve-btn" data-id="${booking.id}">Одобрить</button>` : ''}
-                            <button class="btn btn-danger delete-btn" data-id="${booking.id}">Удалить</button>
-                        </div>
-                    </div>
-                `;
-                container.append(card);
+            card.innerHTML = `
+                <div class="card-body">
+                    <h5 class="card-title">Заявка от: ${booking.lastName} ${booking.firstName}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Категория: ${booking.roomCategory}</h6>
+                    <p class="card-text">
+                        <strong>Телефон:</strong> ${booking.phone}<br>
+                        <strong>Email:</strong> ${booking.email}<br>
+                        <strong>Дата заезда:</strong> ${formatDateRu(booking.checkInDate)}<br>
+                        <strong>Дата выезда:</strong> ${formatDateRu(booking.checkOutDate)}
+                    </p>
+                    <p class="card-text"><strong>Статус:</strong> <span class="badge ${statusClass}">${booking.status}</span></p>
+                </div>
+                <div class="d-grid gap-2 card-footer bg-transparent border-0 pt-0">
+                    ${booking.status === 'На рассмотрении'
+                        ? `<button class="btn btn-success approve-btn" data-id="${booking.id}">Одобрить</button>`
+                        : ''}
+                    <button class="btn btn-danger delete-btn" data-id="${booking.id}">Удалить</button>
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+        // Привязываем обработчики к кнопкам
+        document.querySelectorAll('.approve-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                if (updateBookingStatus(id, 'Одобрена')) {
+                    renderBookings();
+                } else {
+                    alert('Не удалось обновить заявку. Попробуйте ещё раз.');
+                }
             });
-        }
-
-        // 3. Обработчики событий
-        $('#logout-btn').on('click', function(e) {
-            e.preventDefault();
-            logoutAdmin();
         });
 
-        // Делегирование событий для кнопок "Одобрить" и "Удалить"
-        $('#bookings-container').on('click', '.approve-btn', function() {
-            const bookingId = $(this).data('id');
-            updateBookingStatus(bookingId, 'Одобрена');
-            renderBookings(); // Перерисовываем список
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
+                    deleteBooking(id);
+                    renderBookings();
+                }
+            });
         });
+    }
 
-        $('#bookings-container').on('click', '.delete-btn', function() {
-            const bookingId = $(this).data('id');
-            if (confirm('Вы уверены, что хотите удалить эту заявку?')) {
-                deleteBooking(bookingId);
-                renderBookings(); // Перерисовываем список
-            }
-        });
+    function formatDateRu(dateStr) {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('ru-RU');
+    }
 
-        // 4. Первоначальная отрисовка
+    // --- Инициализация ---
+
+    document.addEventListener('DOMContentLoaded', function () {
         renderBookings();
+
+        document.getElementById('logout-btn').addEventListener('click', function (e) {
+            e.preventDefault();
+            localStorage.removeItem('isAdminLoggedIn');
+            window.location.href = 'index.html';
+        });
     });
 </script>
 </body>
