@@ -19,7 +19,6 @@
         <li class="nav-item"><a href="index.html" class="nav-link">На главную</a></li>
     </ul>
 </header>
-<!--Форма авторизации-->
 <main>
     <div class="d-flex justify-content-between flex-wrap align-items-center">
         <h1>Вход для администратора</h1>
@@ -40,7 +39,6 @@
         </div>
     </form>
 </main>
-<!--Контактная информация-->
 <footer class="py-2 my-2">
     <ul class="nav justify-content-between align-items-center">
         <li class="nav-item"><a href="#" class="nav-link text-body-secondary">ул. г.Москва, ул. Ивовая, 48</a></li>
@@ -53,27 +51,28 @@
 </footer>
 <script src="js/jquery-3.7.1.slim.min.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
-<script src="js/index.js"></script>
 <script>
-    $(document).ready(function() {
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
         const ADMIN_LOGIN = 'hotel123';
         const ADMIN_PASSWORD = 'adminHotel';
 
-        $('#login-form').on('submit', function(e) {
-            e.preventDefault();
-            const username = $('#username').val();
-            const password = $('#password').val();
-            const errorDiv = $('#login-error');
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorDiv = document.getElementById('login-error');
 
-            if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
-                // Успешный вход
-                sessionStorage.setItem('isAdminLoggedIn', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                // Ошибка входа
-                errorDiv.text('Неверный логин или пароль.').show();
-            }
-        });
+        console.log('Попытка входа:', username, password);
+
+        if (username === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
+            // Сохраняем флаг в localStorage
+            localStorage.setItem('isAdminLoggedIn', 'true');
+            console.log('Вход успешен, перенаправление...');
+            window.location.href = 'admin.html';
+        } else {
+            errorDiv.textContent = 'Неверный логин или пароль.';
+            errorDiv.style.display = 'block';
+        }
     });
 </script>
 </body>
